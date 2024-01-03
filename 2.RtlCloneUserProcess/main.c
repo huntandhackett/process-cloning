@@ -59,6 +59,10 @@ int wmain(int argc, wchar_t* argv[])
 
         status = NtWaitForSingleObject(processInfo.ProcessHandle, FALSE, NULL);
 
+        // Save exit code before closing the process handle
+        DWORD exitCode;
+        GetExitCodeProcess(processInfo.ProcessHandle, &exitCode);
+
         NtClose(processInfo.ProcessHandle);
         NtClose(processInfo.ThreadHandle);
 
@@ -66,6 +70,12 @@ int wmain(int argc, wchar_t* argv[])
         {
             wprintf_s(L"Failed to wait for the clone: 0x%x\r\n", status);
             return status;
+        }
+
+        if (!NT_SUCCESS(exitCode))
+        {
+            wprintf_s(L"Clone exit with error: 0x%x\r\n", exitCode);
+            return exitCode;
         }
 
         wprintf_s(L"The clone exited.\r\n");
